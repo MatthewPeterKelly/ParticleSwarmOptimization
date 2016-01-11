@@ -16,12 +16,11 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %   xLow = [n, 1] = lower bounds on search space
 %   xUpp = [n, 1] = upper bounds on search space
 %   options = option struct. All fields are optional, with defaults:
-%       .alpha = 0.7 = search weight on current search direction
-%       .beta = 1.0 = search weight on global best
-%       .gamma = 1.2 = search weight on local best
+%       .alpha = 0.7298 = search weight on current search direction
+%       .beta = 0.5*2.9922 = search weight on global best
+%       .gamma = 0.5*2.9922 = search weight on local best
 %       .nPopulation = m = 3*n = population count
 %       .maxIter = 100 = maximum number of generations
-%       .xDelMax = xUpp - xLow = maximum particle position update.
 %       .flagMinimize = true = minimize objective
 %           --> Set to false to maximize objective
 %       .guessWeight = 0.5;  trade-off for initialization; range (0.1,0.9)
@@ -72,8 +71,10 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %   --> makeStruct()
 %
 % References:
-%   http://www.scholarpedia.org/article/Particle_swarm_optimization
 %   
+%   http://www.scholarpedia.org/article/Particle_swarm_optimization
+%
+%   Clerc and Kennedy (2002)
 
 
 %%%% Basic input validation:
@@ -92,9 +93,9 @@ end
 
 
 %%%% Options Struct:
-default.alpha = 0.7; % search weight on current search direction
-default.beta = 1.0; % search weight on global best
-default.gamma = 1.2; % search weight on local best
+default.alpha = 0.7298; %search weight on current search direction
+default.beta = 0.5*2.9922; %search weight on global best
+default.gamma = 0.5*2.9922; %search weight on local best
 default.nPopulation = 3*n; % 3*n = population count
 default.maxIter = 100; % maximum number of generations
 default.xDelMax = xUpp - xLow;  %Maximnum position update;
@@ -142,7 +143,6 @@ X2 = w*X0 + (1-w)*X2;
 % Bounds on search position and updates:
 X_Low = xLow*ones(1,m);
 X_Upp = xUpp*ones(1,m);
-V_Max = options.xDelMax*ones(1,m);  %Maximum position update on each iteration
 
 % Initialize population:
 X = X1;     % Initial position of the population
@@ -180,20 +180,25 @@ for iter = 1:maxIter
     
     %%% Compute new generation of points:
     if iter > 1   % Then do an update on each particle
+        
         r1 = rand(n,m);
         r2 = rand(n,m);
-        X_New = X + ...   %Update equations
+        V =  ...   %Update equations
             options.alpha*V + ...    % Current search direction
             options.beta*r1.*((X_Global*ones(1,m))-X) + ...  % Global direction
             options.gamma*r2.*(X_Best-X);    % Local best direction
-        [X, V] = clampedPositionUpdate(X, X_New, V_Max, X_Low, X_Upp);
+        X_New = X + V;  % Update position
+        X = max(min(X_New, X_Upp), X_Low);   % Clamp position to bounds  
+        
         F = objFun(X);   %Evaluate
+        
         F_Best_New = optFun(F_Best, F);   %Compute the best point
         idxUpdate = F_Best_New ~= F_Best;  % Which indicies updated?
         X_Best(:,idxUpdate) = X(:,idxUpdate);  %Copy over new best points
         F_Best = F_Best_New;
         [F_Global, I_Global] = optFun(F_Best); % Value of best point ever, over all points
         X_Global = X(:, I_Global); % Best point ever, over all  points
+        
     end
     
     %%% Log Data
@@ -223,35 +228,6 @@ info.exitFlag = 1;   %1 == reached maximum iteration
 info.input = makeStruct(objFun, x0, xLow, xUpp, options);  %Copy inputs
 
 end
-
-
-
-function [X, V] = clampedPositionUpdate(X_Old, X_New, V_Max, X_Low, X_Upp)
-%
-% Used to compute the new position X, such that the update is within the
-% allowable bounds:
-%   X_Low < X_New < X_Upp
-%   abs(X_New-X) < V_Max
-%
-
-%%%% Check bounds on position
-X = X_New;
-X = min(X, X_Upp);
-X = max(X, X_Low);
-
-%%%% Check bounds on update
-V = X - X_Old;
-idxUpp = V > V_Max;
-V(idxUpp) = V_Max(idxUpp);
-idxLow = V < -V_Max;
-V(idxLow) = -V_Max(idxUpp);
-
-%%%% Compute the new update
-X = X_Old + V;
-
-end
-
-
 
 
 
