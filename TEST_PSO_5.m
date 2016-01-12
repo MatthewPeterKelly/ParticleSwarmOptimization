@@ -17,13 +17,12 @@ xLow = -5*ones(5,1); % lower bound on the search space
 xUpp = 5*ones(5,1); % upper bound on the search space
 x0 = zeros(5,1);  % initial guess
 
-options.alpha = 0.6;  % weight on current search direction
-options.beta = 1.4;   % weight on local best search direction
-options.gamma = 1.4;  % weight on global best search direction
+options.alpha = 0.2;  % weight on current search direction
+options.beta = 1.0;   % weight on local best search direction
+options.gamma = 1.0;  % weight on global best search direction
 
-options.nPopulation = 100;
-options.maxIter = 100;
-
+options.nPopulation = 15;
+options.maxIter = 20;
 
 options.flagVectorize = true;
 
