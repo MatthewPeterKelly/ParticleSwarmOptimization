@@ -34,6 +34,7 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 % OUTPUTS:
 %   xBest = [n, 1] = best point ever found
 %   fBest = [1, 1] = value of best point found
+%
 %   info = output struct with solver info
 %       .input = copy of solver inputs:
 %           .objFun
@@ -54,7 +55,6 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %       .F_Var = [1,iter] = variance in the current val at each gen
 %       .F_Best_Mean = [1,iter] = mean of the population best value
 %       .F_Mean = [1,iter] = mean of the current population value
-%
 %
 %   dataLog(iter) = struct array with data from each iteration
 %       .X = [n,m] = current position of each particle

@@ -18,8 +18,8 @@ options.alpha = 0.5;  % weight on current search direction
 options.beta = 1.1;   % weight on local best search direction
 options.gamma = 1.1;  % weight on global best search direction
 
-options.nPopulation = 25;
-options.maxIter = 25;
+options.nPopulation = 20;
+options.maxIter = 4;
 
 options.plotFun = @plotStyblinskiTang;  % Plots progress
 

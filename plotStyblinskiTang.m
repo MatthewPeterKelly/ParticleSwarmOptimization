@@ -32,14 +32,14 @@ if isempty(StyblinskiTangContourHandle)
     StyblinskiTangContourHandle = contour(XX,YY,FF,15);
     
     % Plot the solution:
-    plot(-2.903534,-2.903534,'rx','LineWidth',3,'MarkerSize',20);
+    plot(-2.903534,-2.903534,'rx','LineWidth',4,'MarkerSize',25);
 end
 
 %%%% Plot current position
 if isempty(StyblinskiTangPopulationHandle)
     x = dataLog.X(1,:);   %First dimension
     y = dataLog.X(2,:);   %Second dimension
-    StyblinskiTangPopulationHandle = plot(x,y,'k.','MarkerSize',10);
+    StyblinskiTangPopulationHandle = plot(x,y,'k.','MarkerSize',20);
 else
     x = dataLog.X(1,:);   %First dimension
     y = dataLog.X(2,:);   %Second dimension
@@ -52,7 +52,7 @@ end
 if isempty(StyblinskiTangPopBestHandle)
     x = dataLog.X_Best(1,:);   %First dimension
     y = dataLog.X_Best(2,:);   %Second dimension
-    StyblinskiTangPopBestHandle = plot(x,y,'ko','MarkerSize',5,'LineWidth',1);
+    StyblinskiTangPopBestHandle = plot(x,y,'ko','MarkerSize',10,'LineWidth',2);
 else
     x = dataLog.X_Best(1,:);   %First dimension
     y = dataLog.X_Best(2,:);   %Second dimension
@@ -64,7 +64,7 @@ end
 if isempty(StyblinskiTangGlobalHandle)
     x = dataLog.X_Global(1,:);   %First dimension
     y = dataLog.X_Global(2,:);   %Second dimension
-    StyblinskiTangGlobalHandle = plot(x,y,'bo','MarkerSize',8,'LineWidth',2);
+    StyblinskiTangGlobalHandle = plot(x,y,'bo','MarkerSize',15,'LineWidth',3);
 else
     x = dataLog.X_Global(1,:);   %First dimension
     y = dataLog.X_Global(2,:);   %Second dimension
