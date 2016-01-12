@@ -23,6 +23,7 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %       .maxIter = 100 = maximum number of generations
 %       .tolFun = 1e-6 = exit when variance in objective is < tolFun
 %       .tolX = 1e-10 = exit when norm of variance in state < tolX
+%       .flagVectorize = false = is the objective function vectorized?
 %       .flagMinimize = true = minimize objective
 %           --> Set to false to maximize objective
 %       .guessWeight = 0.5;  trade-off for initialization; range (0.1,0.9)
@@ -75,6 +76,13 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %       .F_Global = [1,1] = value of the best point ever
 %       .I_Global = [1,1] = index of the best point ever
 %
+% NOTES:
+%   This function uses a slightly different algorithm based on whether or
+%   not the objective function is vectorized. If the objective is
+%   vectorized, then the new global best point is only computed once per
+%   iteration (generation). If the objective is not vectorized, then the
+%   global best is updated after each particle is updated.
+%
 % Dependencies:
 %   --> mergeOptions()
 %   --> makeStruct()
@@ -84,6 +92,7 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %   http://www.scholarpedia.org/article/Particle_swarm_optimization
 %
 %   Clerc and Kennedy (2002)
+%
 
 
 %%%% Basic input validation:
@@ -109,6 +118,7 @@ default.nPopulation = 3*n; % 3*n = population count
 default.maxIter = 100; % maximum number of generations
 default.tolFun = 1e-6; % exit when variance in objective is < tolFun
 default.tolX = 1e-10;  % exit when norm of variance in state < tolX
+default.flagVectorize = false; % is the objective function vectorized?
 default.flagMinimize = true;  %true for minimization, false for maximization
 default.xDelMax = xUpp - xLow;  %Maximnum position update;
 default.guessWeight = 0.5;  % on range (0.1, 0.9);  0 = ignore guess,  1 = start at guess
@@ -153,14 +163,22 @@ X0 = x0*ones(1,m);
 X1 = w*X0 + (1-w)*X1;
 X2 = w*X0 + (1-w)*X2;
 
-% Bounds on search position and updates:
-X_Low = xLow*ones(1,m);
-X_Upp = xUpp*ones(1,m);
+
 
 % Initialize population:
 X = X1;     % Initial position of the population
 V = X2-X1;  % Initial "velocity" of the population
-F = objFun(X);  % Function value at each particle in the population
+
+if options.flagVectorize   % Batch process objective
+    X_Low = xLow*ones(1,m);
+    X_Upp = xUpp*ones(1,m);
+    F = objFun(X);  % Function value at each particle in the population
+else  % Objective not vectorized
+    F = zeros(1,m);
+    for idx = 1:m   % Loop over particles
+        F(1,idx) = objFun(X(:,idx));
+    end
+end
 
 X_Best = X;  % Best point, for each particle in the population
 F_Best = F;  % Value of best point, for each particle in the population
@@ -188,31 +206,60 @@ info.X_Mean = zeros(n,maxIter);
 info.F_Mean = zeros(1,maxIter);
 info.iter = 1:maxIter;
 
+
 %%%% MAIN LOOP:
 info.exitFlag = 1;   %Assume that we will reach maximum iteration
 for iter = 1:maxIter
     
     %%% Compute new generation of points:
     if iter > 1   % Then do an update on each particle
-        
         r1 = rand(n,m);
         r2 = rand(n,m);
-        V =  ...   %Update equations
-            options.alpha*V + ...    % Current search direction
-            options.beta*r1.*((X_Global*ones(1,m))-X) + ...  % Global direction
-            options.gamma*r2.*(X_Best-X);    % Local best direction
-        X_New = X + V;  % Update position
-        X = max(min(X_New, X_Upp), X_Low);   % Clamp position to bounds
         
-        F = objFun(X);   %Evaluate
-        
-        F_Best_New = optFun(F_Best, F);   %Compute the best point
-        idxUpdate = F_Best_New ~= F_Best;  % Which indicies updated?
-        X_Best(:,idxUpdate) = X(:,idxUpdate);  %Copy over new best points
-        F_Best = F_Best_New;
-        [F_Global, I_Global] = optFun(F_Best); % Value of best point ever, over all points
-        X_Global = X(:, I_Global); % Best point ever, over all  points
-        
+        if options.flagVectorize   % Batch process objective
+            
+            V =  ...   %Update equations
+                options.alpha*V + ...    % Current search direction
+                options.beta*r1.*((X_Global*ones(1,m))-X) + ...  % Global direction
+                options.gamma*r2.*(X_Best-X);    % Local best direction
+            X_New = X + V;  % Update position
+            X = max(min(X_New, X_Upp), X_Low);   % Clamp position to bounds
+            
+            F = objFun(X);   %Evaluate
+            
+            F_Best_New = optFun(F_Best, F);   %Compute the best point
+            idxUpdate = F_Best_New ~= F_Best;  % Which indicies updated?
+            X_Best(:,idxUpdate) = X(:,idxUpdate);  %Copy over new best points
+            F_Best = F_Best_New;
+            [F_Global, I_Global] = optFun(F_Best); % Value of best point ever, over all points
+            X_Global = X(:, I_Global); % Best point ever, over all  points
+            
+            
+        else   %Objective is not vectorized.
+            
+            for idx = 1:m   %%%%%%% Loop over particles  %%%%%%%%%%%%%%
+                
+                V(:,idx) =  ...   %Update equations
+                    options.alpha*V(:,idx) + ...    % Current search direction
+                    options.beta*r1(:,idx).*(X_Global-X(:,idx)) + ...  % Global direction
+                    options.gamma*r2(:,idx).*(X_Best(:,idx)-X(:,idx));    % Local best direction
+                X_New = X(:,idx) + V(:,idx);  % Update position
+                X(:,idx) = max(min(X_New, xUpp), xLow);   % Clamp position to bounds
+                
+                F(:,idx) = objFun(X(:,idx));   %Evaluate
+                
+                [F_Best(1,idx), iBest] = optFun([F(1,idx), F_Best(1,idx)]);
+                if iBest == 1  %Then new point is better!
+                    X_Best(:,idx) = X(:,idx);
+                    [F_Global, iBest] = optFun([F_Best(1,idx), F_Global]);
+                    if iBest == 1 %Then new point is the global best!
+                        X_Global = X_Best(:,idx);
+                    end
+                end
+                
+            end %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+        end
     end
     
     %%% Log Data

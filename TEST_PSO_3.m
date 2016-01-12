@@ -4,7 +4,7 @@
 %
 % 
 
-clc; clear; clear global; figure(200); clf;
+clc; clear; clear global; figure(300); clf;
 
 %%%% Set up problem
 
@@ -21,17 +21,18 @@ x0 = [-1;1];  % initial guess
 % options.tolX = 1e-8;
 % options.tolFun = 1e-4;
 
+% options.flagVectorize = true;  % Objective function is vectorized
+
 options.nPopulation = 15;
 options.maxIter = 50;
 
 options.plotFun = @plotGoldsteinPrice;  % Plots progress
 
-
 %%%% Solve
 [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options);
 
 %%%% Analysis
-figure(201); clf;
+figure(301); clf;
 plotPsoHistory(info);
 
 

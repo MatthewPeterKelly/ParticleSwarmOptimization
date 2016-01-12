@@ -17,7 +17,7 @@ function plotGoldsteinPrice(dataLog, iter)
 global GoldsteinPriceContourHandle GoldsteinPricePopulationHandle
 global GoldsteinPricePopBestHandle GoldsteinPriceGlobalHandle
 
-figure(200); hold on;
+figure(300); hold on;
 
 %%%% Plot the function to be optimized
 if isempty(GoldsteinPriceContourHandle)

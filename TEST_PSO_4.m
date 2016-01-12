@@ -4,7 +4,7 @@
 %
 % 
 
-clc; clear; clear global; figure(200); clf;
+clc; clear; clear global; figure(400); clf;
 
 %%%% Set up problem
 
@@ -19,7 +19,7 @@ options.beta = 1.1;   % weight on local best search direction
 options.gamma = 1.1;  % weight on global best search direction
 
 options.nPopulation = 20;
-options.maxIter = 4;
+options.maxIter = 50;
 
 options.plotFun = @plotStyblinskiTang;  % Plots progress
 
@@ -28,7 +28,7 @@ options.plotFun = @plotStyblinskiTang;  % Plots progress
 [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options);
 
 %%%% Analysis
-figure(201); clf;
+figure(401); clf;
 plotPsoHistory(info);
 
 

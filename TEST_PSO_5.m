@@ -7,7 +7,7 @@
 %   >> help StyblinskiTang   % For more details
 %
 
-clc; clear; clear global; figure(200); clf;
+clc; clear; 
 
 %%%% Set up problem
 
@@ -22,13 +22,15 @@ options.beta = 1.4;   % weight on local best search direction
 options.gamma = 1.4;  % weight on global best search direction
 
 options.nPopulation = 100;
-options.maxIter = 40;
+options.maxIter = 100;
+
+options.flagVectorize = true;
 
 %%%% Solve
 [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options);
 
 %%%% Analysis
-figure(201); clf;
+figure(501); clf;
 plotPsoHistory(info);
 
 
