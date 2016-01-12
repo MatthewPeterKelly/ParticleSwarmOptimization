@@ -6,7 +6,10 @@ This implementation of PSO is designed for solving a bounded non-linear paramter
 
 There are a variety of options that can be set by the user, but will be initialized to a default value if ommitted.
 
-The output of the solver contains a full history of the optimization, which can be plotted using plotPsoHistory.m. Additionally, the user can define a plotting function to be called on each iteration. Both of these features are demonstrated in the TEST_PSO_*.m scripts.
+The output of the solver contains a full history of the optimization, which can be plotted using plotPsoHistory.m. Additionally, the user can define a plotting function to be called on each iteration.Both of these features are demonstrated in the TEST_PSO_*.m scripts.
+
+The code supports both vectorized and non-vectorized objective function. If the objective function is vectorized, then the global best is updated synchronously, once per generation. If the objective function is not vectorized, then the optimization uses an asynchronous update, updating the global best after every particle update.
+
 
 ## Test Functions:
 
@@ -40,6 +43,9 @@ The output of the solver contains a full history of the optimization, which can 
            .gamma = 0.9 = search weight on local best
            .nPopulation = m = 3*n = population count
            .maxIter = 100 = maximum number of generations
+           .tolFun = 1e-6 = exit when variance in objective is < tolFun
+           .tolX = 1e-10 = exit when norm of variance in state < tolX
+           .flagVectorize = false = is the objective function vectorized?
            .flagMinimize = true = minimize objective
                --> Set to false to maximize objective
            .guessWeight = 0.5;  trade-off for initialization; range (0.1,0.9)
@@ -49,6 +55,11 @@ The output of the solver contains a full history of the optimization, which can 
                plotFun( dataLog(iter), iter )
                --> See OUTPUTS for details about dataLog
                --> Leave empty to omit plotting (faster)
+           .display = 'iter';
+               --> 'iter' = print out info for each iteration
+               --> 'final' = print out some info on exit
+               --> 'off' = disable printing
+           .printMod = 1   (only used if display == 'iter')
     
      OUTPUTS:
        xBest = [n, 1] = best point ever found
@@ -62,7 +73,9 @@ The output of the solver contains a full history of the optimization, which can 
                .xUpp
                .options
            .exitFlag = how did optimization finish
+               0 = objective variance < tolFun
                1 = reached max iteration count
+               2 = norm of state variance < tolX
            .X_Global = [n,iter] = best point in each generation
            .F_Global = [1,iter] = value of the best point ever
            .I_Global = [1,iter] = index of the best point ever
@@ -84,4 +97,21 @@ The output of the solver contains a full history of the optimization, which can 
            .X_Global = [n,1] = best point ever (over all particles)
            .F_Global = [1,1] = value of the best point ever
            .I_Global = [1,1] = index of the best point ever
+    
+     NOTES:
+       This function uses a slightly different algorithm based on whether or
+       not the objective function is vectorized. If the objective is
+       vectorized, then the new global best point is only computed once per
+       iteration (generation). If the objective is not vectorized, then the
+       global best is updated after each particle is updated.
+    
+     Dependencies:
+       --> mergeOptions()
+       --> makeStruct()
+    
+     References:
+    
+       http://www.scholarpedia.org/article/Particle_swarm_optimization
+    
+       Clerc and Kennedy (2002)
     
