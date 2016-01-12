@@ -27,8 +27,8 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %       .flagMinimize = true = minimize objective
 %           --> Set to false to maximize objective
 %       .guessWeight = 0.5;  trade-off for initialization; range (0.1,0.9)
-%           --> 0.1  heavy weight on initial guess (x0)
-%           --> 0.9  heavy weight on random initialization [xLow, xUpp]
+%           --> 0.1  heavy weight on random initialization [xLow, xUpp]
+%           --> 0.9  heavy weight on initial guess (x0)
 %       .plotFun = function handle for plotting progress
 %           plotFun( dataLog(iter), iter )
 %           --> See OUTPUTS for details about dataLog
