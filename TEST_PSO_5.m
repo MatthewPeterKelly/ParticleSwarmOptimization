@@ -24,6 +24,7 @@ options.gamma = 1.4;  % weight on global best search direction
 options.nPopulation = 100;
 options.maxIter = 100;
 
+
 options.flagVectorize = true;
 
 %%%% Solve

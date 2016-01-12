@@ -7,9 +7,9 @@ function f = StyblinskiTang(x)
 %   Wikipedia:  Test Functions for Optimization
 %
 % Global Minimum:
-%   n = size(x,1);  %Dimension of search space
-%   xStar = -2.903534*ones(n,1);
-%   -39.16617*n < f(xStar) < -39.16616*n  
+%   N = size(x,1);  %Dimension of search space
+%   xStar = -2.903534027771178 * ones(N,1);
+%   f(xStar) = -39.166165703771419 * N;
 % 
 
 [n,m] = size(x);
