@@ -21,6 +21,8 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %       .gamma = 0.9 = search weight on local best
 %       .nPopulation = m = 3*n = population count
 %       .maxIter = 100 = maximum number of generations
+%       .tolFun = 1e-6 = exit when variance in objective is < tolFun
+%       .tolX = 1e-10 = exit when norm of variance in state < tolX
 %       .flagMinimize = true = minimize objective
 %           --> Set to false to maximize objective
 %       .guessWeight = 0.5;  trade-off for initialization; range (0.1,0.9)
@@ -30,6 +32,11 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %           plotFun( dataLog(iter), iter )
 %           --> See OUTPUTS for details about dataLog
 %           --> Leave empty to omit plotting (faster)
+%       .display = 'iter';
+%           --> 'iter' = print out info for each iteration
+%           --> 'final' = print out some info on exit
+%           --> 'off' = disable printing
+%       .printMod = 1   (only used if display == 'iter')
 %
 % OUTPUTS:
 %   xBest = [n, 1] = best point ever found
@@ -43,7 +50,9 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %           .xUpp
 %           .options
 %       .exitFlag = how did optimization finish
+%           0 = objective variance < tolFun
 %           1 = reached max iteration count
+%           2 = norm of state variance < tolX
 %       .X_Global = [n,iter] = best point in each generation
 %       .F_Global = [1,iter] = value of the best point ever
 %       .I_Global = [1,iter] = index of the best point ever
@@ -71,7 +80,7 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %   --> makeStruct()
 %
 % References:
-%   
+%
 %   http://www.scholarpedia.org/article/Particle_swarm_optimization
 %
 %   Clerc and Kennedy (2002)
@@ -98,10 +107,14 @@ default.beta = 0.9; %search weight on global best
 default.gamma = 0.9; %search weight on local best
 default.nPopulation = 3*n; % 3*n = population count
 default.maxIter = 100; % maximum number of generations
+default.tolFun = 1e-6; % exit when variance in objective is < tolFun
+default.tolX = 1e-10;  % exit when norm of variance in state < tolX
+default.flagMinimize = true;  %true for minimization, false for maximization
 default.xDelMax = xUpp - xLow;  %Maximnum position update;
 default.guessWeight = 0.5;  % on range (0.1, 0.9);  0 = ignore guess,  1 = start at guess
 default.plotFun = [];   % Handle to a function for plotting the progress
-default.flagMinimize = true;  %true for minimization, false for maximization
+default.display = 'iter';  % Print out progress to user
+default.printMod = 1;  % Print out every [printMod] iterations
 if nargin == 5  % user provided options struct!
     options = mergeOptions(default,options);
 else  % no user-defined options. Use defaults.
@@ -176,6 +189,7 @@ info.F_Mean = zeros(1,maxIter);
 info.iter = 1:maxIter;
 
 %%%% MAIN LOOP:
+info.exitFlag = 1;   %Assume that we will reach maximum iteration
 for iter = 1:maxIter
     
     %%% Compute new generation of points:
@@ -188,7 +202,7 @@ for iter = 1:maxIter
             options.beta*r1.*((X_Global*ones(1,m))-X) + ...  % Global direction
             options.gamma*r2.*(X_Best-X);    % Local best direction
         X_New = X + V;  % Update position
-        X = max(min(X_New, X_Upp), X_Low);   % Clamp position to bounds  
+        X = max(min(X_New, X_Upp), X_Low);   % Clamp position to bounds
         
         F = objFun(X);   %Evaluate
         
@@ -220,16 +234,64 @@ for iter = 1:maxIter
         options.plotFun(dataLog(iter), iter);
     end
     
+    %%% Print:
+    xVar = norm(info.X_Var(:,iter));
+    if strcmp('iter',options.display)
+        if mod(iter-1,options.printMod)==0
+            fprintf('iter: %3d,   fBest: %9.3e,   fVar: %9.3e   xVar: %9.3e  \n',...
+                iter, info.F_Global(iter), info.F_Var(1,iter), xVar);
+        end
+    end
+    
+    %%% Convergence:
+    if info.F_Var(1,iter) < options.tolFun
+        info.exitFlag = 0;
+        dataLog = dataLog(1:iter);
+        info = truncateInfo(info,maxIter,iter);
+        break
+    elseif xVar < options.tolX
+        info.exitFlag = 2;
+        dataLog = dataLog(1:iter);
+        info = truncateInfo(info,maxIter,iter);
+        break
+    end
 end
 
 xBest = info.X_Global(:,end);
 fBest = info.F_Global(end);
-info.exitFlag = 1;   %1 == reached maximum iteration
 info.input = makeStruct(objFun, x0, xLow, xUpp, options);  %Copy inputs
+
+%%% Print:
+if strcmp('iter',options.display) || strcmp('final',options.display)
+    switch info.exitFlag
+        case 0
+            fprintf('Optimization Converged. Exit: fVar < tolFun \n');
+        case 1
+            fprintf('Maximum iteration reached. \n');
+        case 2
+            fprintf('Optimization Converged. Exit: norm(xVar) < tolX \n');
+    end
+end
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function info = truncateInfo(info,maxIter,iter)
+%
+% Removes the empty entries in the info struct
+
+names = fieldnames(info);
+for i=1:length(names)
+    if (isnumeric(info.(names{i})))   % Check if it's a matrix
+        if size(info.(names{i}),2) == maxIter    % Check if it is iteration data
+            info.(names{i}) = info.(names{i})(:,1:iter);
+        end
+    end
+end
+
+end
 
 
 

@@ -18,6 +18,9 @@ x0 = [-1;1];  % initial guess
 % options.beta = 0.9;   % weight on local best search direction
 % options.gamma = 0.9;  % weight on global best search direction
 
+% options.tolX = 1e-8;
+% options.tolFun = 1e-4;
+
 options.nPopulation = 15;
 options.maxIter = 50;
 
