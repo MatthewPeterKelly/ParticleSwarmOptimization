@@ -22,7 +22,7 @@ plot(info.iter, info.F_Mean);
 plot(info.iter, info.F_Global);
 xlabel('iteration')
 ylabel('objective')
-title('Objective Value')
+title('Objective value')
 legend('mean(F\_best)','mean(F)','Global Best')
 if useLogScale, set(gca,'YScale','log'); end
 
@@ -31,8 +31,8 @@ subplot(2,2,3); hold on;
 plot(info.iter, info.F_Best_Var);
 plot(info.iter, info.F_Var);
 xlabel('iteration')
-ylabel('objective')
-title('Objective Value Variance')
+ylabel('objective variance')
+title('Objective value variance')
 legend('var(F\_best)','var(F)')
 if useLogScale, set(gca,'YScale','log'); end
 
@@ -52,7 +52,7 @@ for i=1:nDim
    plot(info.iter, info.X_Global(i,:), 'Color',colorMap(i,:), 'LineWidth', 4); 
 end
 xlabel('iteration')
-ylabel('variance')
+ylabel('state')
 title('search position')
 
 %Plot the search variance along each dimension:
@@ -66,11 +66,8 @@ for i=1:nDim
    plot(info.iter, info.X_Best_Var(i,:), 'Color',colorMap(i,:), 'LineWidth', 2); 
 end
 xlabel('iteration')
-ylabel('variance')
-title('search variance')
-
-
-
+ylabel('state variance')
+title('search position variance')
 
 
 end

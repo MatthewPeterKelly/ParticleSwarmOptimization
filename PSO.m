@@ -16,9 +16,9 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %   xLow = [n, 1] = lower bounds on search space
 %   xUpp = [n, 1] = upper bounds on search space
 %   options = option struct. All fields are optional, with defaults:
-%       .alpha = 0.7298 = search weight on current search direction
-%       .beta = 0.5*2.9922 = search weight on global best
-%       .gamma = 0.5*2.9922 = search weight on local best
+%       .alpha = 0.6 = search weight on current search direction
+%       .beta = 0.9 = search weight on global best
+%       .gamma = 0.9 = search weight on local best
 %       .nPopulation = m = 3*n = population count
 %       .maxIter = 100 = maximum number of generations
 %       .flagMinimize = true = minimize objective
@@ -93,9 +93,9 @@ end
 
 
 %%%% Options Struct:
-default.alpha = 0.7298; %search weight on current search direction
-default.beta = 0.5*2.9922; %search weight on global best
-default.gamma = 0.5*2.9922; %search weight on local best
+default.alpha = 0.6; %search weight on current search direction
+default.beta = 0.9; %search weight on global best
+default.gamma = 0.9; %search weight on local best
 default.nPopulation = 3*n; % 3*n = population count
 default.maxIter = 100; % maximum number of generations
 default.xDelMax = xUpp - xLow;  %Maximnum position update;

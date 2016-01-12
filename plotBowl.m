@@ -14,7 +14,7 @@ function plotBowl(dataLog, iter)
 %   .I_Global = [1,1] = index of the best point ever
 %
 
-figure(1); clf; hold on;
+figure(100); clf; hold on;
 axis([-1,1,-1,1]); axis equal;
 
 %%%% Draw contour lines:
