@@ -54,6 +54,7 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %           0 = objective variance < tolFun
 %           1 = reached max iteration count
 %           2 = norm of state variance < tolX
+%       .fEvalCount = how many calls to the objective function?
 %       .X_Global = [n,iter] = best point in each generation
 %       .F_Global = [1,iter] = value of the best point ever
 %       .I_Global = [1,iter] = index of the best point ever
@@ -307,6 +308,7 @@ end
 xBest = info.X_Global(:,end);
 fBest = info.F_Global(end);
 info.input = makeStruct(objFun, x0, xLow, xUpp, options);  %Copy inputs
+info.fEvalCount = iter*m;
 
 %%% Print:
 if strcmp('iter',options.display) || strcmp('final',options.display)
