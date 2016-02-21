@@ -40,13 +40,13 @@ if useLogScale, set(gca,'YScale','log'); end
 %Plot the search variance along each dimension:
 subplot(2,2,2); hold on;
 nDim = size(info.X_Mean,1);
-colorMap = getDefaultPlotColors();
+colorMap = lines(nDim);
 legendData = cell(1,nDim);
 for i=1:nDim
    plot(info.iter, info.X_Mean(i,:), 'Color',colorMap(i,:), 'LineWidth', 1);
    legendData{i} = ['x' num2str(i)];
 end
-legend(legendData);
+if nDim < 8, legend(legendData); end
 for i=1:nDim
    plot(info.iter, info.X_Best_Mean(i,:), 'Color',colorMap(i,:), 'LineWidth', 2);
    plot(info.iter, info.X_Global(i,:), 'Color',colorMap(i,:), 'LineWidth', 4); 
@@ -57,11 +57,11 @@ title('search position')
 
 %Plot the search variance along each dimension:
 subplot(2,2,4); hold on;
-colorMap = getDefaultPlotColors();
+colorMap = lines(nDim);
 for i=1:nDim
    plot(info.iter, info.X_Var(i,:), 'Color',colorMap(i,:), 'LineWidth', 1);
 end
-legend(legendData);
+if nDim < 8, legend(legendData); end
 for i=1:nDim
    plot(info.iter, info.X_Best_Var(i,:), 'Color',colorMap(i,:), 'LineWidth', 2); 
 end
