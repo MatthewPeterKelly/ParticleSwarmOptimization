@@ -21,7 +21,7 @@ The code supports both vectorized and non-vectorized objective function. If the 
 
 ## Help file for PSO.m
 
-         [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
+    [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
     
     Particle Swarm Optimization
     
