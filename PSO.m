@@ -13,6 +13,7 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %           x = [n, m] = search point in n-dimensional space (for m points)
 %           f = [1, m] = objective function value, for each of m points
 %   x0 = [n, 1] = initial search location
+%       --> Optional input. Set x0 = [] to ignore.
 %   xLow = [n, 1] = lower bounds on search space
 %   xUpp = [n, 1] = upper bounds on search space
 %   options = option struct. All fields are optional, with defaults:
@@ -26,8 +27,11 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %       .flagVectorize = false = is the objective function vectorized?
 %       .flagMinimize = true = minimize objective
 %           --> Set to false to maximize objective
-%       .guessWeight = 0.5;  trade-off for initialization; range (0.1,0.9)
-%           --> 0.1  heavy weight on random initialization [xLow, xUpp]
+%       .flagWarmStart = false = directly use initial guess?
+%           --> true:  first particle starts at x0
+%           --> false: all particles are randomly selected
+%       .guessWeight = 0.2;  trade-off for initialization; range [0, 0.9)
+%           --> 0.0  ignore x0; use random initialization [xLow, xUpp]
 %           --> 0.9  heavy weight on initial guess (x0)
 %       .plotFun = function handle for plotting progress
 %           plotFun( dataLog(iter), iter )
@@ -84,20 +88,30 @@ function [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options)
 %   iteration (generation). If the objective is not vectorized, then the
 %   global best is updated after each particle is updated.
 %
-% Dependencies:
+%
+% DEPENDENCIES
 %   --> mergeOptions()
 %   --> makeStruct()
 %
-% References:
+%
+% REFERENCES:
 %
 %   http://www.scholarpedia.org/article/Particle_swarm_optimization
 %
 %   Clerc and Kennedy (2002)
 %
+%
+% CHANGE LOG:
+%
+%   February 21, 2016
+%   --> Changed default and bounds for options.guessWeight
+%   --> Added options.flagWarmStart
+%   --> Made x0 argument optional  (pass x0 as [] to ignore)
+%
 
 
 %%%% Basic input validation:
-[n, m] = size(x0);
+[n, m] = size(xLow);
 if m ~= 1
     error('x0 is not a valid size! Must be a column vector.')
 end
@@ -122,7 +136,8 @@ default.tolX = 1e-10;  % exit when norm of variance in state < tolX
 default.flagVectorize = false; % is the objective function vectorized?
 default.flagMinimize = true;  %true for minimization, false for maximization
 default.xDelMax = xUpp - xLow;  %Maximnum position update;
-default.guessWeight = 0.5;  % on range (0.1, 0.9);  0 = ignore guess,  1 = start at guess
+default.flagWarmStart = false;  %Directly use the initial point?
+default.guessWeight = 0.2;  % on range [0, 0.9);  0 = ignore guess,  1 = start at guess
 default.plotFun = [];   % Handle to a function for plotting the progress
 default.display = 'iter';  % Print out progress to user
 default.printMod = 1;  % Print out every [printMod] iterations
@@ -134,12 +149,12 @@ end
 
 
 %%% Options validation:
-if options.guessWeight < 0.1
-    options.guessWeight = 0.1;
-    disp('WARNING: options.guessWeight must be on range (0.1, 0.9)');
+if options.guessWeight < 0
+    options.guessWeight = 0;
+    disp('WARNING: options.guessWeight must be on range [0, 0.9)');
 elseif options.guessWeight > 0.9
     options.guessWeight = 0.9;
-    disp('WARNING: options.guessWeight must be on range (0.1, 0.9)');
+    disp('WARNING: options.guessWeight must be on range [0, 0.9)');
 end
 
 
@@ -148,6 +163,13 @@ if options.flagMinimize
     optFun = @min;
 else
     optFun = @max;
+end
+
+%%%% Check to see if user defined x0. If not, force defaults
+if isempty(x0)
+   x0 = 0.5*xLow + 0.5*xUpp;
+   options.guessWeight = 0.0;
+   options.flagWarmStart = false;
 end
 
 
@@ -164,11 +186,15 @@ X0 = x0*ones(1,m);
 X1 = w*X0 + (1-w)*X1;
 X2 = w*X0 + (1-w)*X2;
 
-
-
 % Initialize population:
 X = X1;     % Initial position of the population
 V = X2-X1;  % Initial "velocity" of the population
+
+% Check for warm start. If so, override random initial point with x0
+if options.flagWarmStart
+   X(:,1) = x0; 
+   V(:,1) = zeros(size(x0));
+end
 
 if options.flagVectorize   % Batch process objective
     X_Low = xLow*ones(1,m);

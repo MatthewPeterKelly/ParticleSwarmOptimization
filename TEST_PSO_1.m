@@ -10,7 +10,7 @@ objFun = @(x)( sum(x.^2,1) );   % Minimize this function
 
 xLow = -ones(2,1); % lower bound on the search space
 xUpp = ones(2,1); % upper bound on the search space
-x0 = -ones(2,1) + 2*rand(2,1);  % initial guess
+x0 = [];  % No initial guess
 
 options.alpha = 0.4;  % weight on current search direction
 options.beta = 0.9;   % weight on local best search direction

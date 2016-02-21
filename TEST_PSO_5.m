@@ -15,16 +15,17 @@ objFun = @StyblinskiTang;   % Minimize this function
 
 xLow = -5*ones(5,1); % lower bound on the search space
 xUpp = 5*ones(5,1); % upper bound on the search space
-x0 = zeros(5,1);  % initial guess
+x0 = -2*ones(5,1);  % initial guess
 
-options.alpha = 0.2;  % weight on current search direction
+options.alpha = 0.5;  % weight on current search direction
 options.beta = 1.0;   % weight on local best search direction
 options.gamma = 1.0;  % weight on global best search direction
 
 options.nPopulation = 15;
-options.maxIter = 20;
+options.maxIter = 25;
 
-options.flagVectorize = true;
+options.flagVectorize = true;  % Use vectorized objective function
+options.flagWarmStart = true;  % Include x0 in first generation
 
 %%%% Solve
 [xBest, fBest, info, dataLog] = PSO(objFun, x0, xLow, xUpp, options);
