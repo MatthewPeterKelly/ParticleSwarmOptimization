@@ -5,6 +5,7 @@
 % 
 
 clc; clear; clear global; figure(200); clf;
+global HimmelblauSaveAnimation    %Set to true to save the animation
 
 %%%% Set up problem
 
@@ -22,6 +23,7 @@ options.nPopulation = 15;
 options.maxIter = 50;
 
 options.plotFun = @plotHimmelblau;  % Plots progress
+HimmelblauSaveAnimation = false;   %Save an animation
 
 
 %%%% Solve

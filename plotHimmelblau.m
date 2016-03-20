@@ -16,6 +16,7 @@ function plotHimmelblau(dataLog, iter)
 
 global HimmelblauContourHandle HimmelblauPopulationHandle
 global HimmelblauPopBestHandle HimmelblauGlobalHandle
+global HimmelblauSaveAnimation HimmelblauFrameId
 
 figure(200); hold on;
 
@@ -86,5 +87,27 @@ axis equal; axis(5*[-1,1,-1,1]);
 %%%% Push the draw commands through the plot buffer
 drawnow;
 pause(0.05);  %Slow down animation
+
+%%%% Save animation if desired:
+animationFileName = 'PSO_Himmelblau_Animation.gif';
+if isempty(HimmelblauFrameId)
+    HimmelblauFrameId = 1;
+else
+    HimmelblauFrameId = HimmelblauFrameId + 1;
+end
+if isempty(HimmelblauSaveAnimation)
+    HimmelblauSaveAnimation = false;
+else
+    if HimmelblauSaveAnimation
+        frame = getframe(gcf);
+        im = frame2im(frame);
+        [imind,cm] = rgb2ind(im,256);
+        if HimmelblauFrameId == 1;
+            imwrite(imind,cm,animationFileName,'gif', 'Loopcount',inf);
+        else
+            imwrite(imind,cm,animationFileName,'gif','WriteMode','append');
+        end
+    end
+end
 
 end
